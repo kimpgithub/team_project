@@ -5,6 +5,10 @@ package com.example.team_project.camerascreen
 
 import android.content.ContentValues.TAG
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Matrix
+import android.media.ExifInterface
 import android.net.Uri
 import android.util.Log
 import androidx.camera.core.CameraSelector
@@ -56,6 +60,7 @@ import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
 import java.io.File
+import java.io.FileOutputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import java.text.SimpleDateFormat
@@ -209,9 +214,41 @@ private fun takePhoto(
 
             override fun onImageSaved(output: ImageCapture.OutputFileResults) {
                 Log.d(TAG, "Photo capture succeeded: ${photoFile.absolutePath}")
+                rotateImageIfRequired(photoFile)
                 onImageSaved(photoFile)
             }
         })
+}
+
+// 회전 함수 추가
+private fun rotateImageIfRequired(photoFile: File) {
+    try {
+        val ei = ExifInterface(photoFile.absolutePath)
+        val orientation: Int = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED)
+        val bitmap = BitmapFactory.decodeFile(photoFile.absolutePath)
+        val rotatedBitmap = when (orientation) {
+            ExifInterface.ORIENTATION_ROTATE_90 -> rotateImage(bitmap, 90)
+            ExifInterface.ORIENTATION_ROTATE_180 -> rotateImage(bitmap, 180)
+            ExifInterface.ORIENTATION_ROTATE_270 -> rotateImage(bitmap, 270)
+            else -> bitmap
+        }
+        // 회전된 이미지를 다시 파일에 저장
+        val out = FileOutputStream(photoFile)
+        rotatedBitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
+        out.flush()
+        out.close()
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
+// 비트맵 회전 함수
+private fun rotateImage(img: Bitmap, degree: Int): Bitmap {
+    val matrix = Matrix()
+    matrix.postRotate(degree.toFloat())
+    val rotatedImg = Bitmap.createBitmap(img, 0, 0, img.width, img.height, matrix, true)
+    img.recycle()
+    return rotatedImg
 }
 
 private fun uploadImage(imageFile: File, callback: (Boolean) -> Unit) {
