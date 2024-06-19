@@ -4,12 +4,10 @@ package com.example.team_project.camerascreen
 
 
 import android.content.ContentValues.TAG
-import android.content.pm.PackageManager
 import android.net.Uri
 import android.util.Log
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
-import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
@@ -34,32 +32,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
-import com.example.team_project.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.MultipartBody
-import okhttp3.OkHttpClient
-import okhttp3.RequestBody.Companion.asRequestBody
-import okhttp3.ResponseBody
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Retrofit
-import retrofit2.http.Multipart
-import retrofit2.http.POST
-import retrofit2.http.Part
-import java.io.File
-import java.net.HttpURLConnection
-import java.net.URL
-import java.text.SimpleDateFormat
-import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -89,7 +68,7 @@ fun CameraScreen(navController: NavController) {
             cameraControl = camera.cameraControl
             cameraControl?.setLinearZoom(0.5f) // Fixed zoom level, adjust as necessary
         } catch (exc: Exception) {
-            // Handle exception
+            Log.e(TAG, "Use case binding failed", exc)
         }
     }
 
@@ -116,14 +95,15 @@ fun CameraScreen(navController: NavController) {
             )
 
             Button(onClick = {
+                navController.navigate("loadingScreen")
                 takePhoto(context, imageCapture, outputDirectory, executor) { photoFile ->
                     uploadImage(photoFile) { success ->
                         if (success) {
-                            val imageUrl = "http://192.168.45.66:8080/output/processed_${photoFile.name}"
+                            val imageUrl =
+                                "http://192.168.45.66:8080/output/processed_${photoFile.name}"
                             val encodedUrl = Uri.encode(imageUrl)
 
                             // 파일 존재 여부를 확인하는 코루틴 실행
-                            navController.navigate("loadingScreen")
                             navController.currentBackStackEntry?.lifecycleScope?.launch {
                                 val fileExists = withContext(Dispatchers.IO) {
                                     var exists = false
@@ -157,89 +137,7 @@ fun CameraScreen(navController: NavController) {
         }
     }
 }
-// 파일 존재 여부를 확인하는 함수
-private fun checkFileExists(url: String): Boolean {
-    return try {
-        val connection = URL(url).openConnection() as HttpURLConnection
-        connection.requestMethod = "HEAD"
-        val responseCode = connection.responseCode
-        responseCode == HttpURLConnection.HTTP_OK
-    } catch (e: Exception) {
-        false
-    }
-}
 
-private fun getOutputDirectory(context: android.content.Context): File {
-    val mediaDir = context.externalMediaDirs.firstOrNull()?.let {
-        File(it, context.resources.getString(R.string.app_name)).apply { mkdirs() }
-    }
-    return if (mediaDir != null && mediaDir.exists()) mediaDir else context.filesDir
-}
-
-private fun takePhoto(
-    context: android.content.Context,
-    imageCapture: ImageCapture,
-    outputDirectory: File,
-    executor: ExecutorService,
-    onImageSaved: (File) -> Unit
-) {
-    if (ContextCompat.checkSelfPermission(
-            context,
-            android.Manifest.permission.CAMERA
-        ) != PackageManager.PERMISSION_GRANTED
-    ) {
-        ActivityCompat.requestPermissions(
-            context as android.app.Activity, arrayOf(android.Manifest.permission.CAMERA), 1
-        )
-        return
-    }
-
-    val photoFile = File(
-        outputDirectory,
-        SimpleDateFormat(FILENAME_FORMAT, Locale.US).format(System.currentTimeMillis()) + ".jpg"
-    )
-
-    val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
-
-    imageCapture.takePicture(
-        outputOptions, executor, object : ImageCapture.OnImageSavedCallback {
-            override fun onError(exc: ImageCaptureException) {
-                Log.e(TAG, "Photo capture failed: ${exc.message}", exc)
-            }
-
-            override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                Log.d(TAG, "Photo capture succeeded: ${photoFile.absolutePath}")
-                onImageSaved(photoFile)
-            }
-        })
-}
-
-private fun uploadImage(imageFile: File, callback: (Boolean) -> Unit) {
-    val retrofit = Retrofit.Builder()
-        .baseUrl("http://192.168.45.66:8080/")
-        .client(OkHttpClient.Builder().build())
-        .build()
-
-    val service = retrofit.create(UploadService::class.java)
-
-    val requestFile = imageFile.asRequestBody("image/jpeg".toMediaTypeOrNull())
-    val body = MultipartBody.Part.createFormData("file", imageFile.name, requestFile)
-
-    val call = service.uploadImage(body)
-    call.enqueue(object : Callback<ResponseBody> {
-        override fun onResponse(
-            call: Call<ResponseBody>,
-            response: retrofit2.Response<ResponseBody>
-        ) {
-            callback(response.isSuccessful)
-        }
-
-        override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-            Log.e(TAG, "Image upload failed: ${t.message}", t)
-            callback(false)
-        }
-    })
-}
 @Composable
 fun LoadingScreen() {
     Box(
@@ -249,6 +147,7 @@ fun LoadingScreen() {
         CircularProgressIndicator()
     }
 }
+
 @Composable
 fun ErrorScreen() {
     Box(
@@ -259,13 +158,6 @@ fun ErrorScreen() {
     }
 }
 
-interface UploadService {
-    @Multipart
-    @POST("/infer")
-    fun uploadImage(@Part file: MultipartBody.Part): Call<ResponseBody>
-}
-
 private const val TAG = "CameraScreen"
-private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
 
 

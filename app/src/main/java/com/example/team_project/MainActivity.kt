@@ -42,6 +42,8 @@ class MainActivity : ComponentActivity() {
                             composable("mainScreen") { MainScreen(navController) }
                             composable("cameraScreen") { CameraScreen(navController) }
                             composable("loadingScreen") { LoadingScreen() }
+                            composable("errorScreen") { ErrorScreen() }
+
                             composable(
                                 "resultScreen/{imageUrl}",
                                 arguments = listOf(navArgument("imageUrl") {
