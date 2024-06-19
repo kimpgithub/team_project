@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
@@ -20,13 +21,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.NavController
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+
 
 @Composable
 fun CameraScreen(navController: NavController) {
@@ -36,6 +40,7 @@ fun CameraScreen(navController: NavController) {
     val executor: ExecutorService = Executors.newSingleThreadExecutor()
 
     var previewView: PreviewView? by remember { mutableStateOf(null) }
+    var cameraControl by remember { mutableStateOf<androidx.camera.core.CameraControl?>(null) }
 
     LaunchedEffect(cameraProviderFuture) {
         val cameraProvider = cameraProviderFuture.get()
@@ -45,9 +50,11 @@ fun CameraScreen(navController: NavController) {
         val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
         try {
             cameraProvider.unbindAll()
-            cameraProvider.bindToLifecycle(
+            val camera = cameraProvider.bindToLifecycle(
                 context as LifecycleOwner, cameraSelector, preview, imageCapture
             )
+            cameraControl = camera.cameraControl
+            cameraControl?.setLinearZoom(0.5f) // Fixed zoom level, adjust as necessary
         } catch (exc: Exception) {
             // Handle exception
         }
@@ -64,9 +71,17 @@ fun CameraScreen(navController: NavController) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp),
-            verticalArrangement = Arrangement.Bottom,
+            verticalArrangement = Arrangement.SpaceBetween,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Text(
+                text = "Please take a picture from a distance of 30 cm",
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            )
+
             Button(onClick = {
                 // Capture image logic here
                 navController.navigate("resultScreen")
