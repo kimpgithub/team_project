@@ -106,6 +106,7 @@ fun CameraScreen(navController: NavController) {
             )
 
             Button(onClick = {
+                navController.navigate("loadingScreen")
                 takePhoto(context, imageCapture, outputDirectory, executor) { photoFile ->
                     uploadImage(photoFile) { success ->
                         if (success) {
@@ -114,7 +115,6 @@ fun CameraScreen(navController: NavController) {
                             val encodedUrl = Uri.encode(imageUrl)
 
                             // 파일 존재 여부를 확인하는 코루틴 실행
-                            navController.navigate("loadingScreen")
                             navController.currentBackStackEntry?.lifecycleScope?.launch {
                                 val fileExists = withContext(Dispatchers.IO) {
                                     var exists = false
