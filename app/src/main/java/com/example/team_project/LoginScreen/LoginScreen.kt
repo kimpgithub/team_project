@@ -30,8 +30,8 @@ import kotlinx.coroutines.tasks.await
 
 @Composable
 fun LoginScreen(navController: NavController) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    val email = "1whrhddydrPwjd@gmail.com"
+    val password = "qwer123$"
     val auth: FirebaseAuth = Firebase.auth
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -45,16 +45,18 @@ fun LoginScreen(navController: NavController) {
     ) {
         TextField(
             value = email,
-            onValueChange = { email = it },
+            onValueChange = {},
             label = { Text("Email") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            enabled = false // 값을 변경하지 못하도록 비활성화
         )
         Spacer(modifier = Modifier.height(8.dp))
         TextField(
             value = password,
-            onValueChange = { password = it },
+            onValueChange = {},
             label = { Text("Password") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            enabled = false // 값을 변경하지 못하도록 비활성화
         )
         Spacer(modifier = Modifier.height(16.dp))
         Button(onClick = {
