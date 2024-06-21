@@ -24,37 +24,26 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.team_project.LoginScreen.LoginScreen
 import com.example.team_project.camerascreen.CameraScreen
 import com.example.team_project.camerascreen.ErrorScreen
 import com.example.team_project.camerascreen.LoadingScreen
 import com.example.team_project.resultscreen.ResultScreen
 import com.example.team_project.ui.theme.Team_projectTheme
+import com.google.firebase.FirebaseApp
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.analytics.ktx.analytics
+import com.google.firebase.ktx.Firebase
 
 class MainActivity : ComponentActivity() {
+    private lateinit var analytics: FirebaseAnalytics
+
     private val cameraPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
             if (isGranted) {
                 // Permission granted, proceed with setting up the camera
                 setContent {
-                    Team_projectTheme {
-                        val navController = rememberNavController()
-                        NavHost(navController, startDestination = "mainScreen") {
-                            composable("mainScreen") { MainScreen(navController) }
-                            composable("cameraScreen") { CameraScreen(navController) }
-                            composable("loadingScreen") { LoadingScreen() }
-                            composable(
-                                "resultScreen/{imageUrl}",
-                                arguments = listOf(navArgument("imageUrl") {
-                                    type = NavType.StringType
-                                })
-                            ) { backStackEntry ->
-                                ResultScreen(
-                                    navController,
-                                    backStackEntry.arguments?.getString("imageUrl") ?: ""
-                                )
-                            }
-                        }
-                    }
+                    AppContent()
                 }
             } else {
                 // Permission denied, show a message to the user
@@ -64,37 +53,47 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Firebase 초기화
+        FirebaseApp.initializeApp(this)
+        analytics = Firebase.analytics
+
         if (ContextCompat.checkSelfPermission(
                 this, Manifest.permission.CAMERA
             ) == PackageManager.PERMISSION_GRANTED
         ) {
             // Permission is already granted
             setContent {
-                Team_projectTheme {
-                    val navController = rememberNavController()
-                    NavHost(navController, startDestination = "mainScreen") {
-                        composable("mainScreen") { MainScreen(navController) }
-                        composable("cameraScreen") { CameraScreen(navController) }
-                        composable("loadingScreen") { LoadingScreen() }
-                        composable("errorScreen") { ErrorScreen() }
-
-                        composable(
-                            "resultScreen/{imageUrl}",
-                            arguments = listOf(navArgument("imageUrl") {
-                                type = NavType.StringType
-                            })
-                        ) { backStackEntry ->
-                            ResultScreen(
-                                navController,
-                                backStackEntry.arguments?.getString("imageUrl") ?: ""
-                            )
-                        }
-                    }
-                }
+                AppContent()
             }
         } else {
             // Request the permission
             cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+        }
+    }
+}
+
+@Composable
+fun AppContent() {
+    Team_projectTheme {
+        val navController = rememberNavController()
+        NavHost(navController, startDestination = "loginScreen") {
+            composable("loginScreen") { LoginScreen(navController) }
+            composable("mainScreen") { MainScreen(navController) }
+            composable("cameraScreen") { CameraScreen(navController) }
+            composable("loadingScreen") { LoadingScreen() }
+            composable("errorScreen") { ErrorScreen() }
+            composable(
+                "resultScreen/{imageUrl}",
+                arguments = listOf(navArgument("imageUrl") {
+                    type = NavType.StringType
+                })
+            ) { backStackEntry ->
+                ResultScreen(
+                    navController,
+                    backStackEntry.arguments?.getString("imageUrl") ?: ""
+                )
+            }
         }
     }
 }
@@ -120,5 +119,15 @@ fun MainScreenPreview() {
     val navController = rememberNavController()
     Team_projectTheme {
         MainScreen(navController)
+    }
+}
+
+
+@Composable
+@androidx.compose.ui.tooling.preview.Preview(showBackground = true)
+fun LoginScreenPreview() {
+    val navController = rememberNavController()
+    Team_projectTheme {
+        LoginScreen(navController)
     }
 }
