@@ -11,8 +11,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -45,7 +46,6 @@ fun LoginScreen(navController: NavController) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
-    // 연보라색 정의
     val lightPurple = Color(0xFFE1BEE7)
 
     Column(
@@ -120,10 +120,12 @@ fun LoginScreen(navController: NavController) {
                     }
                 }
             },
-            colors = ButtonDefaults.buttonColors(containerColor = lightPurple),
-            modifier = Modifier.fillMaxWidth() // 텍스트 필드와 버튼의 너비를 맞춤
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp)
+                .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(8.dp))
         ) {
-            Text("Login")
+            Text("Login", color = Color.White)
         }
     }
 }
