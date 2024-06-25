@@ -111,7 +111,7 @@ fun CameraScreen(navController: NavController) {
                     uploadImage(photoFile) { success ->
                         if (success) {
                             val imageUrl =
-                                "http://52.65.163.94:8080/output/processed_${photoFile.name}"
+                                "http://192.168.45.66:8080/output/processed_${photoFile.name}"
                             val encodedUrl = Uri.encode(imageUrl)
 
                             // 파일 존재 여부를 확인하는 코루틴 실행
@@ -163,7 +163,7 @@ private fun checkFileExists(url: String): Boolean {
 
 private fun uploadImage(imageFile: File, callback: (Boolean) -> Unit) {
     val retrofit = Retrofit.Builder()
-        .baseUrl("http://52.65.163.94:8080/")
+        .baseUrl("http://192.168.45.66:8080/")
         .client(OkHttpClient.Builder().build())
         .build()
 

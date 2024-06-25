@@ -34,5 +34,13 @@ fun ResultScreen(navController: NavController, encodedImageUrl: String) {
         ) {
             Text("Back to Camera")
         }
+        Button(
+            onClick = { navController.navigate("infoScreen") },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp)
+        ) {
+            Text("Info")
+        }
     }
 }

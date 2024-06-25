@@ -28,6 +28,7 @@ import com.example.team_project.loginsceen.LoginScreen
 import com.example.team_project.camerascreen.CameraScreen
 import com.example.team_project.camerascreen.ErrorScreen
 import com.example.team_project.camerascreen.LoadingScreen
+import com.example.team_project.infoscreen.InfoScreen
 import com.example.team_project.resultscreen.ResultScreen
 import com.example.team_project.ui.theme.Team_projectTheme
 import com.google.firebase.FirebaseApp
@@ -93,6 +94,9 @@ fun AppContent() {
                     navController,
                     backStackEntry.arguments?.getString("imageUrl") ?: ""
                 )
+            }
+            composable("infoScreen") {
+                InfoScreen(navController)
             }
         }
     }
