@@ -19,10 +19,10 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 
 @Composable
-fun InfoScreen(navController: NavController) {
+fun InfoScreen(navController: NavController, initialImageUrl: String?) {
     var apartmentName by remember { mutableStateOf("") }
     var complexName by remember { mutableStateOf("") }
-    var imageUrl by remember { mutableStateOf("") }
+    var imageUrl by remember { mutableStateOf(initialImageUrl ?: "") }
     var annotationType by remember { mutableStateOf("") }
 
     Column(

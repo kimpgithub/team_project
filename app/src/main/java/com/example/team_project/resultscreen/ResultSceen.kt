@@ -42,7 +42,7 @@ fun ResultScreen(navController: NavController, encodedImageUrl: String) {
 
         Row(
             modifier = Modifier
-                .align(Alignment.BottomCenter)
+                .align(Alignment.BottomStart)  // 왼쪽 하단으로 정렬
                 .padding(16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
@@ -57,7 +57,7 @@ fun ResultScreen(navController: NavController, encodedImageUrl: String) {
                 Text("Back to Camera")
             }
             Button(
-                onClick = { navController.navigate("infoScreen") },
+                onClick = { navController.navigate("infoScreen/${Uri.encode(encodedImageUrl)}") },
                 modifier = Modifier
                     .weight(1f)
                     .height(48.dp)

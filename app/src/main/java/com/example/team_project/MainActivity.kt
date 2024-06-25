@@ -95,8 +95,12 @@ fun AppContent() {
                     backStackEntry.arguments?.getString("imageUrl") ?: ""
                 )
             }
-            composable("infoScreen") {
-                InfoScreen(navController)
+            composable(
+                "infoScreen/{initialImageUrl}",
+                arguments = listOf(navArgument("initialImageUrl") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val initialImageUrl = backStackEntry.arguments?.getString("initialImageUrl")
+                InfoScreen(navController, initialImageUrl)
             }
         }
     }
